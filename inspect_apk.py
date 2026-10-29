@@ -33,6 +33,7 @@ def inspect(path):
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('apk');p.add_argument('--url',required=True);p.add_argument('--mandatory',choices=['true','false'],default='true');p.add_argument('--message',required=True);p.add_argument('--output',default='docs/version.json');a=p.parse_args()
  result=inspect(a.apk);previous=json.loads(pathlib.Path(a.output).read_text());latest=result['latest_version_code']
+ if latest<previous['latest_version_code']:raise ValueError('No se puede publicar una compilación anterior a la vigente')
  minimum=latest if a.mandatory=='true' else previous['min_supported_version_code']
  if minimum>latest:raise ValueError('Una publicación opcional no puede reducir la versión por debajo del mínimo activo')
  if not a.url.startswith('https://github.com/enmanuelalbert1626-stack/zone-rd-updates/releases/download/'):raise ValueError('Enlace fuera del canal oficial')
