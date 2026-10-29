@@ -3,7 +3,7 @@
 El control de versiones está en **Actions → Publicar actualización de ZONE RD → Run workflow**.
 
 1. En **Releases → Draft a new release**, crea una etiqueta (por ejemplo `v1.0-r7`).
-2. Adjunta el nuevo archivo con el nombre exacto **ZONE RD.apk** y publica la release.
+2. Adjunta un único archivo APK de ZONE RD y publica la release.
 3. Abre el formulario de Actions, introduce esa etiqueta y escribe el mensaje.
 4. Deja marcada **Obligatoria** para bloquear las versiones anteriores; desmárcala para ofrecer la actualización sin elevar el mínimo permitido.
 5. Pulsa **Run workflow** y espera a que termine en verde.

@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Etiqueta de la publicación que contiene ZONE RD.apk (ejemplo: v1.0-r6)'
+        description: 'Etiqueta de la publicación que contiene el APK (ejemplo: v1.0-r6)'
         required: true
         type: string
       mandatory:
@@ -39,14 +39,15 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/zonerd"
           gh release view "$RELEASE_TAG" --json isDraft,isPrerelease,assets > "$RUNNER_TEMP/release.json"
-          python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/release.json")); assert not r["isDraft"], "Publica primero la release"; a=next(x for x in r["assets"] if x["name"]=="ZONE RD.apk"); open(os.environ["RUNNER_TEMP"]+"/apk-url.txt","w").write(a["url"])'
-          gh release download "$RELEASE_TAG" --pattern 'ZONE RD.apk' --dir "$RUNNER_TEMP/zonerd"
+          python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/release.json")); assert not r["isDraft"], "Publica primero la release"; assets=[x for x in r["assets"] if x["name"].lower().endswith(".apk")]; assert len(assets)==1, "La release debe tener un solo APK"; a=assets[0]; open(os.environ["RUNNER_TEMP"]+"/apk-url.txt","w").write(a["url"])'
+          gh release download "$RELEASE_TAG" --pattern '*.apk' --dir "$RUNNER_TEMP/zonerd"
       - name: Verificar versión, tamaño y SHA-256; publicar el aviso
         env:
           UPDATE_MESSAGE: ${{ inputs.message }}
           MANDATORY: ${{ inputs.mandatory }}
         run: |
-          python3 inspect_apk.py "$RUNNER_TEMP/zonerd/ZONE RD.apk" --url "$(cat "$RUNNER_TEMP/apk-url.txt")" --mandatory "$MANDATORY" --message "$UPDATE_MESSAGE"
+          APK_PATH="$(find "$RUNNER_TEMP/zonerd" -name '*.apk' -print -quit)"
+          python3 inspect_apk.py "$APK_PATH" --url "$(cat "$RUNNER_TEMP/apk-url.txt")" --mandatory "$MANDATORY" --message "$UPDATE_MESSAGE"
           git config user.name 'ZONE RD Updates'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add docs/version.json
