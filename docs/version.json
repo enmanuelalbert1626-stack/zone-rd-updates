@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "package_name": "com.samceas.zonebrasil.rdtest",
-  "latest_version_code": 38,
-  "min_supported_version_code": 38,
+  "latest_version_code": 39,
+  "min_supported_version_code": 39,
   "version_name": "1.0",
-  "message": "Tu versión de ZONE RD está actualizada.",
+  "message": "Actualiza ZONE RD para renovar las pantallas y los textos del juego.",
   "apk": {
-    "url": "https://github.com/enmanuelalbert1626-stack/zone-rd-updates/releases/download/v1.0-r6/ZONE.RD.apk",
-    "sha256": "d2f91096ef2dbed9a28ea79d646bb32e9ba7192a660d3c3e8e8769a53e0b8a8c",
+    "url": "https://github.com/enmanuelalbert1626-stack/zone-rd-updates/releases/download/v1.0-r7/ZONE.RD.apk",
+    "sha256": "088295ae54676590b55d54b5e15941874288cc576a62af8e02a339dec10c7770",
     "size": 1067324525
   }
 }
