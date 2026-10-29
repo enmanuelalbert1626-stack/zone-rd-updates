@@ -1,0 +1,63 @@
+name: Publicar actualización de ZONE RD
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Etiqueta de la publicación que contiene ZONE RD.apk (ejemplo: v1.0-r6)'
+        required: true
+        type: string
+      mandatory:
+        description: 'Obligatoria: impedir jugar con versiones anteriores'
+        required: true
+        default: true
+        type: boolean
+      message:
+        description: 'Mensaje que verán los jugadores'
+        required: true
+        default: 'Hay una nueva versión de ZONE RD. Actualiza para continuar.'
+        type: string
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: zone-rd-channel
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Descargar APK de la publicación elegida
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/zonerd"
+          gh release view "$RELEASE_TAG" --json isDraft,isPrerelease,assets > "$RUNNER_TEMP/release.json"
+          python3 -c 'import json,os; r=json.load(open(os.environ["RUNNER_TEMP"]+"/release.json")); assert not r["isDraft"], "Publica primero la release"; a=next(x for x in r["assets"] if x["name"]=="ZONE RD.apk"); open(os.environ["RUNNER_TEMP"]+"/apk-url.txt","w").write(a["url"])'
+          gh release download "$RELEASE_TAG" --pattern 'ZONE RD.apk' --dir "$RUNNER_TEMP/zonerd"
+      - name: Verificar versión, tamaño y SHA-256; publicar el aviso
+        env:
+          UPDATE_MESSAGE: ${{ inputs.message }}
+          MANDATORY: ${{ inputs.mandatory }}
+        run: |
+          python3 inspect_apk.py "$RUNNER_TEMP/zonerd/ZONE RD.apk" --url "$(cat "$RUNNER_TEMP/apk-url.txt")" --mandatory "$MANDATORY" --message "$UPDATE_MESSAGE"
+          git config user.name 'ZONE RD Updates'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/version.json
+          if git diff --cached --quiet; then
+            echo 'El canal ya tenía estos datos.'
+          else
+            git commit -m 'Publicar versión verificada de ZONE RD'
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - uses: actions/deploy-pages@v4
